@@ -1,6 +1,7 @@
 package net.minestom.server;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import net.jirmjahu.minh.feature.extension.ExtensionManager;
 import net.minestom.server.advancements.AdvancementManager;
 import net.minestom.server.adventure.bossbar.BossBarManager;
 import net.minestom.server.command.CommandManager;
@@ -90,6 +91,7 @@ final class ServerProcessImpl implements ServerProcess {
     private final AdvancementManager advancement;
     private final BossBarManager bossBar;
     private final TagManager tag;
+    private final ExtensionManager extensionManager;
 
     private final Server server;
 
@@ -135,6 +137,7 @@ final class ServerProcessImpl implements ServerProcess {
         this.advancement = new AdvancementManager();
         this.bossBar = new BossBarManager();
         this.tag = new TagManager();
+        this.extensionManager = new ExtensionManager();
 
         this.server = new Server(packetProcessor);
 
@@ -313,12 +316,20 @@ final class ServerProcessImpl implements ServerProcess {
     }
 
     @Override
+    public @NotNull ExtensionManager extensionManager() {
+        return extensionManager;
+    }
+
+    @Override
     public void start(@NotNull SocketAddress socketAddress) {
         if (!started.compareAndSet(false, true)) {
             throw new IllegalStateException("Server already started");
         }
 
         LOGGER.info("Starting " + MinecraftServer.getBrandName() + " server.");
+
+        //load extensions
+        extensionManager.loadExtensions();
 
         // Init server
         try {
@@ -346,6 +357,7 @@ final class ServerProcessImpl implements ServerProcess {
         if (!stopped.compareAndSet(false, true))
             return;
         LOGGER.info("Stopping " + MinecraftServer.getBrandName() + " server.");
+        extensionManager.disableExtensions();
         scheduler.shutdown();
         connection.shutdown();
         server.stop();

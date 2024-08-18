@@ -1,6 +1,7 @@
 package net.minestom.server.event;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
+import net.jirmjahu.minh.feature.events.Subscribe;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.ServerFlag;
 import net.minestom.server.event.trait.RecursiveEvent;
@@ -10,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -46,6 +48,24 @@ non-sealed class EventNodeImpl<T extends Event> implements EventNode<T> {
         this.eventType = filter.eventType();
     }
 
+    public void registerListener(@NotNull Object listener) {
+        Arrays.stream(listener.getClass().getDeclaredMethods())
+                .filter(method -> method.isAnnotationPresent(Subscribe.class))
+                .forEach(method -> registerMethodListener(listener, method));
+    }
+
+    private void registerMethodListener(Object listener, Method method) {
+        final Class<? extends T> type = (Class<? extends T>) method.getParameters()[0].getType();
+
+        this.addListener(type, event -> {
+            try {
+                method.invoke(listener, event);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
     @Override
     @SuppressWarnings("unchecked")
     public <E extends T> @NotNull ListenerHandle<E> getHandle(@NotNull Class<E> handleType) {
@@ -75,7 +95,8 @@ non-sealed class EventNodeImpl<T extends Event> implements EventNode<T> {
     }
 
     @Override
-    public <E extends T> void replaceChildren(@NotNull String name, @NotNull Class<E> eventType, @NotNull EventNode<E> eventNode) {
+    public <E extends T> void replaceChildren(@NotNull String
+                                                      name, @NotNull Class<E> eventType, @NotNull EventNode<E> eventNode) {
         synchronized (GLOBAL_CHILD_LOCK) {
             final Set<EventNode<T>> children = getChildren();
             if (children.isEmpty()) return;
@@ -111,7 +132,8 @@ non-sealed class EventNodeImpl<T extends Event> implements EventNode<T> {
             final var childImpl = (EventNodeImpl<? extends T>) child;
             Check.stateCondition(!ServerFlag.EVENT_NODE_ALLOW_MULTIPLE_PARENTS && childImpl.parent != null, "Node already has a parent");
             Check.stateCondition(Objects.equals(parent, child), "Cannot have a child as parent");
-            if (!children.add((EventNodeImpl<T>) childImpl)) return this; // Couldn't add the child (already present?)
+            if (!children.add((EventNodeImpl<T>) childImpl))
+                return this; // Couldn't add the child (already present?)
             childImpl.parent = this;
             childImpl.invalidateEventsFor(this);
         }

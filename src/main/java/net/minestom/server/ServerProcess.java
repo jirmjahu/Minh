@@ -1,5 +1,6 @@
 package net.minestom.server;
 
+import net.jirmjahu.minh.feature.extension.ExtensionManager;
 import net.minestom.server.advancements.AdvancementManager;
 import net.minestom.server.adventure.bossbar.BossBarManager;
 import net.minestom.server.command.CommandManager;
@@ -122,8 +123,9 @@ public interface ServerProcess extends Registries, Snapshotable {
      */
     @NotNull Ticker ticker();
 
-
     @NotNull Logger getLogger();
+
+    @NotNull ExtensionManager extensionManager();
 
     void start(@NotNull SocketAddress socketAddress);
 
