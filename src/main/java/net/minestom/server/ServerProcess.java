@@ -23,6 +23,7 @@ import net.minestom.server.thread.ThreadDispatcher;
 import net.minestom.server.timer.SchedulerManager;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -120,6 +121,9 @@ public interface ServerProcess extends Registries, Snapshotable {
      * Handles the server ticks.
      */
     @NotNull Ticker ticker();
+
+
+    @NotNull Logger getLogger();
 
     void start(@NotNull SocketAddress socketAddress);
 

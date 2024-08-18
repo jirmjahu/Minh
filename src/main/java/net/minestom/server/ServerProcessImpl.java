@@ -308,6 +308,11 @@ final class ServerProcessImpl implements ServerProcess {
     }
 
     @Override
+    public @NotNull Logger getLogger() {
+        return LOGGER;
+    }
+
+    @Override
     public void start(@NotNull SocketAddress socketAddress) {
         if (!started.compareAndSet(false, true)) {
             throw new IllegalStateException("Server already started");
