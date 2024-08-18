@@ -1120,6 +1120,28 @@ public class Player extends LivingEntity implements CommandSender, Localizable, 
     }
 
     /**
+     * Feeds the player.
+     */
+    public void feed() {
+        setFood(20);
+    }
+
+    /**
+     * Saturates the player.
+     */
+    public void saturate() {
+        setFoodSaturation(20);
+    }
+
+    /**
+     * Feeds and saturates player.
+     */
+    public void feedSaturate() {
+        feed();
+        saturate();
+    }
+
+    /**
      * Gets if the player is eating.
      *
      * @return true if the player is eating, false otherwise
