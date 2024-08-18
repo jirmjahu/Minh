@@ -19,7 +19,7 @@ public final class ExceptionManager {
         if (e instanceof OutOfMemoryError) {
             // OOM should be handled manually
             e.printStackTrace();
-            MinecraftServer.stopCleanly();
+            MinecraftServer.getServerProcess().stop();
             return;
         }
         this.getExceptionHandler().handleException(e);

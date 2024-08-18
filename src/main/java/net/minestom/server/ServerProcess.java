@@ -24,6 +24,7 @@ import net.minestom.server.timer.SchedulerManager;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
 @ApiStatus.NonExtendable
@@ -31,33 +32,33 @@ public interface ServerProcess extends Registries, Snapshotable {
     /**
      * Handles incoming connections/players.
      */
-    @NotNull ConnectionManager connection();
+    @NotNull ConnectionManager connectionManager();
 
     /**
      * Handles registered instances.
      */
-    @NotNull InstanceManager instance();
+    @NotNull InstanceManager instanceManager();
 
     /**
      * Handles {@link net.minestom.server.instance.block.BlockHandler block handlers}
      * and {@link BlockPlacementRule placement rules}.
      */
-    @NotNull BlockManager block();
+    @NotNull BlockManager blockManager();
 
     /**
      * Handles registered commands.
      */
-    @NotNull CommandManager command();
+    @NotNull CommandManager commandManager();
 
     /**
      * Handles registered recipes shown to clients.
      */
-    @NotNull RecipeManager recipe();
+    @NotNull RecipeManager recipeManager();
 
     /**
      * Handles registered teams.
      */
-    @NotNull TeamManager team();
+    @NotNull TeamManager teamManager();
 
     /**
      * Gets the global event handler.
@@ -69,19 +70,19 @@ public interface ServerProcess extends Registries, Snapshotable {
     /**
      * Main scheduler ticked at the server rate.
      */
-    @NotNull SchedulerManager scheduler();
+    @NotNull SchedulerManager schedulerManager();
 
-    @NotNull BenchmarkManager benchmark();
+    @NotNull BenchmarkManager benchmarkManager();
 
     /**
      * Handles registered advancements.
      */
-    @NotNull AdvancementManager advancement();
+    @NotNull AdvancementManager advancementManager();
 
     /**
      * Handles registered boss bars.
      */
-    @NotNull BossBarManager bossBar();
+    @NotNull BossBarManager bossBarManager();
 
     /**
      * Handles registry tags.
@@ -121,6 +122,10 @@ public interface ServerProcess extends Registries, Snapshotable {
     @NotNull Ticker ticker();
 
     void start(@NotNull SocketAddress socketAddress);
+
+    default void start(@NotNull String address, int port) {
+        start(new InetSocketAddress(address, port));
+    }
 
     void stop();
 

@@ -36,6 +36,7 @@ import net.minestom.server.snapshot.*;
 import net.minestom.server.thread.Acquirable;
 import net.minestom.server.thread.ThreadDispatcher;
 import net.minestom.server.thread.ThreadProvider;
+import net.minestom.server.thread.TickSchedulerThread;
 import net.minestom.server.timer.SchedulerManager;
 import net.minestom.server.utils.PacketUtils;
 import net.minestom.server.utils.collection.MappedCollection;
@@ -207,32 +208,32 @@ final class ServerProcessImpl implements ServerProcess {
     }
 
     @Override
-    public @NotNull ConnectionManager connection() {
+    public @NotNull ConnectionManager connectionManager() {
         return connection;
     }
 
     @Override
-    public @NotNull InstanceManager instance() {
+    public @NotNull InstanceManager instanceManager() {
         return instance;
     }
 
     @Override
-    public @NotNull BlockManager block() {
+    public @NotNull BlockManager blockManager() {
         return block;
     }
 
     @Override
-    public @NotNull CommandManager command() {
+    public @NotNull CommandManager commandManager() {
         return command;
     }
 
     @Override
-    public @NotNull RecipeManager recipe() {
+    public @NotNull RecipeManager recipeManager() {
         return recipe;
     }
 
     @Override
-    public @NotNull TeamManager team() {
+    public @NotNull TeamManager teamManager() {
         return team;
     }
 
@@ -242,22 +243,22 @@ final class ServerProcessImpl implements ServerProcess {
     }
 
     @Override
-    public @NotNull SchedulerManager scheduler() {
+    public @NotNull SchedulerManager schedulerManager() {
         return scheduler;
     }
 
     @Override
-    public @NotNull BenchmarkManager benchmark() {
+    public @NotNull BenchmarkManager benchmarkManager() {
         return benchmark;
     }
 
     @Override
-    public @NotNull AdvancementManager advancement() {
+    public @NotNull AdvancementManager advancementManager() {
         return advancement;
     }
 
     @Override
-    public @NotNull BossBarManager bossBar() {
+    public @NotNull BossBarManager bossBarManager() {
         return bossBar;
     }
 
@@ -328,7 +329,11 @@ final class ServerProcessImpl implements ServerProcess {
         LOGGER.info(MinecraftServer.getBrandName() + " server started successfully.");
 
         // Stop the server on SIGINT
-        if (ServerFlag.SHUTDOWN_ON_SIGNAL) Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
+        if (ServerFlag.SHUTDOWN_ON_SIGNAL) {
+            Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
+        }
+
+        new TickSchedulerThread(this).start();
     }
 
     @Override
@@ -368,15 +373,15 @@ final class ServerProcessImpl implements ServerProcess {
         public void tick(long nanoTime) {
             final long msTime = System.currentTimeMillis();
 
-            scheduler().processTick();
+            schedulerManager().processTick();
 
             // Connection tick (let waiting clients in, send keep alives, handle configuration players packets)
-            connection().tick(msTime);
+            connectionManager().tick(msTime);
 
             // Server tick (chunks/entities)
             serverTick(msTime);
 
-            scheduler().processTickEnd();
+            schedulerManager().processTickEnd();
 
             // Flush all waiting packets
             PacketUtils.flush();
@@ -395,7 +400,7 @@ final class ServerProcessImpl implements ServerProcess {
 
         private void serverTick(long tickStart) {
             // Tick all instances
-            for (Instance instance : instance().getInstances()) {
+            for (Instance instance : instanceManager().getInstances()) {
                 try {
                     instance.tick(tickStart);
                 } catch (Exception e) {

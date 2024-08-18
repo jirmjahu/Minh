@@ -28,7 +28,6 @@ import net.minestom.server.network.socket.Server;
 import net.minestom.server.recipe.RecipeManager;
 import net.minestom.server.registry.DynamicRegistry;
 import net.minestom.server.scoreboard.TeamManager;
-import net.minestom.server.thread.TickSchedulerThread;
 import net.minestom.server.timer.SchedulerManager;
 import net.minestom.server.utils.PacketUtils;
 import net.minestom.server.utils.nbt.BinaryTagSerializer;
@@ -41,13 +40,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.UnknownNullability;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
 /**
  * The main server class used to start the server and retrieve all the managers.
  * <p>
- * The server needs to be initialized with {@link #init()} and started with {@link #start(String, int)}.
+ * The server needs to be initialized with {@link #init()} and started with {@link #serverProcess#start()(String, int)}.
  * You should register all of your dimensions, biomes, commands, events, etc... in-between.
  */
 public final class MinecraftServer implements MinecraftConstants {
@@ -70,12 +68,11 @@ public final class MinecraftServer implements MinecraftConstants {
     private static volatile ServerProcess serverProcess;
 
     private static int compressionThreshold = 256;
-    private static String brandName = "Minestom";
+    private static String brandName = "Minh";
     private static Difficulty difficulty = Difficulty.NORMAL;
 
-    public static MinecraftServer init() {
-        updateProcess();
-        return new MinecraftServer();
+    public static ServerProcess init() {
+        return updateProcess();
     }
 
     @ApiStatus.Internal
@@ -144,27 +141,27 @@ public final class MinecraftServer implements MinecraftConstants {
     }
 
     public static @NotNull InstanceManager getInstanceManager() {
-        return serverProcess.instance();
+        return serverProcess.instanceManager();
     }
 
     public static @NotNull BlockManager getBlockManager() {
-        return serverProcess.block();
+        return serverProcess.blockManager();
     }
 
     public static @NotNull CommandManager getCommandManager() {
-        return serverProcess.command();
+        return serverProcess.commandManager();
     }
 
     public static @NotNull RecipeManager getRecipeManager() {
-        return serverProcess.recipe();
+        return serverProcess.recipeManager();
     }
 
     public static @NotNull TeamManager getTeamManager() {
-        return serverProcess.team();
+        return serverProcess.teamManager();
     }
 
     public static @NotNull SchedulerManager getSchedulerManager() {
-        return serverProcess.scheduler();
+        return serverProcess.schedulerManager();
     }
 
     /**
@@ -173,7 +170,7 @@ public final class MinecraftServer implements MinecraftConstants {
      * @return the benchmark manager
      */
     public static @NotNull BenchmarkManager getBenchmarkManager() {
-        return serverProcess.benchmark();
+        return serverProcess.benchmarkManager();
     }
 
     public static @NotNull ExceptionManager getExceptionManager() {
@@ -181,11 +178,11 @@ public final class MinecraftServer implements MinecraftConstants {
     }
 
     public static @NotNull ConnectionManager getConnectionManager() {
-        return serverProcess.connection();
+        return serverProcess.connectionManager();
     }
 
     public static @NotNull BossBarManager getBossBarManager() {
-        return serverProcess.bossBar();
+        return serverProcess.bossBarManager();
     }
 
     public static @NotNull PacketProcessor getPacketProcessor() {
@@ -236,7 +233,7 @@ public final class MinecraftServer implements MinecraftConstants {
     /**
      * Changes the compression threshold of the server.
      * <p>
-     * WARNING: this need to be called before {@link #start(SocketAddress)}.
+     * WARNING: this need to be called before {@link #serverProcess#start()} (SocketAddress)}.
      *
      * @param compressionThreshold the new compression threshold, 0 to disable compression
      * @throws IllegalStateException if this is called after the server started
@@ -247,7 +244,7 @@ public final class MinecraftServer implements MinecraftConstants {
     }
 
     public static AdvancementManager getAdvancementManager() {
-        return serverProcess.advancement();
+        return serverProcess.advancementManager();
     }
 
     public static TagManager getTagManager() {
@@ -326,6 +323,7 @@ public final class MinecraftServer implements MinecraftConstants {
      * @param address the server address
      * @throws IllegalStateException if called before {@link #init()} or if the server is already running
      */
+    /*
     public void start(@NotNull SocketAddress address) {
         serverProcess.start(address);
         new TickSchedulerThread(serverProcess).start();
@@ -333,12 +331,16 @@ public final class MinecraftServer implements MinecraftConstants {
 
     public void start(@NotNull String address, int port) {
         start(new InetSocketAddress(address, port));
-    }
+    }*/
 
     /**
      * Stops this server properly (saves if needed, kicking players, etc.)
      */
-    public static void stopCleanly() {
+    /*public static void stopCleanly() {
         serverProcess.stop();
+    }*/
+
+    public static ServerProcess getServerProcess() {
+        return serverProcess;
     }
 }
